@@ -19,7 +19,7 @@ const Shop = {
         {
             key: 'turbo', name: 'Turbo Yakıt', icon: '⚡',
             desc: 'Havadayken ekstra itme (Boşluk)', maxLevel: 5,
-            baseCost: 500, costMultiplier: 2.2, effect: '+3 turbo yakıt'
+            baseCost: 800, costMultiplier: 2.5, effect: '+3 turbo yakıt'
         },
         {
             key: 'magnet', name: 'Para Mıknatısı', icon: '🧲',
