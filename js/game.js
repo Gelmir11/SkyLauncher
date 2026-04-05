@@ -361,9 +361,7 @@ const Game = {
                 Physics.applyRampBoost(this.plane);
                 Sounds.play('boost');
                 Particles.add(ramp.x, ramp.y - 10, 'star', { count: 10, color: '#ffd54f' });
-                Particles.add(ramp.x, ramp.y - 30, 'text', {
-                    text: '🚀 RAMPA!', color: '#ff9800', fontSize: 20, count: 1
-                });
+                // sadece yıldız efekti, yazı yok
             }
         }
     },
@@ -379,9 +377,6 @@ const Game = {
                 Physics.applyPaperBoost(this.plane);
                 Sounds.play('boost');
                 Particles.add(pp.x, pp.y, 'star', { count: 15, color: '#88ccff' });
-                Particles.add(pp.x, pp.y - 25, 'text', {
-                    text: '✈️ +GÜÇ!', color: '#00e5ff', fontSize: 22, count: 1
-                });
             }
         }
     },
@@ -434,23 +429,24 @@ const Game = {
             }
         }
 
-        // Dağlar — 3 katmanlı parallax
-        for (let layer = 0; layer < 3; layer++) {
-            const layerData = this.bgLayers[layer];
-            if (!layerData) continue;
-            const parallax = 0.05 + layer * 0.06;
-            const baseY = this.groundY - 20 + layer * 15;
-            const alpha = 0.3 + layer * 0.25;
-
+        // Dağlar — 3 katmanlı parallax (prosedürel sinüs)
+        const layerConfigs = [
+            { parallax: 0.04, baseH: 90, color: this.bgLayers[0]?.color || '#1a3a2a', alpha: 0.35, freq1: 0.003, freq2: 0.008 },
+            { parallax: 0.08, baseH: 65, color: this.bgLayers[1]?.color || '#2d5a3d', alpha: 0.5, freq1: 0.005, freq2: 0.012 },
+            { parallax: 0.13, baseH: 40, color: this.bgLayers[2]?.color || '#3d7a50', alpha: 0.7, freq1: 0.007, freq2: 0.02 }
+        ];
+        for (const lc of layerConfigs) {
+            const offsetX = this.cameraX * lc.parallax;
             ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.fillStyle = layerData.color;
+            ctx.globalAlpha = lc.alpha;
+            ctx.fillStyle = lc.color;
             ctx.beginPath();
             ctx.moveTo(0, this.groundY);
-
-            for (const pt of layerData.points) {
-                const px = ((pt.x - this.cameraX * parallax) % (this.width * 3) + this.width * 3) % (this.width * 3);
-                ctx.lineTo(px, baseY - pt.h);
+            for (let x = 0; x <= this.width; x += 4) {
+                const wx = x + offsetX;
+                const h = lc.baseH *
+                    (0.5 + 0.3 * Math.sin(wx * lc.freq1) + 0.2 * Math.sin(wx * lc.freq2 + 1.5));
+                ctx.lineTo(x, this.groundY - h);
             }
             ctx.lineTo(this.width, this.groundY);
             ctx.closePath();
@@ -634,7 +630,7 @@ const Game = {
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 9px Nunito';
             ctx.textAlign = 'center';
-            ctx.fillText('+GÜÇ', 0, pp.radius + 12);
+            // yazı yok, sadece simge
             ctx.restore();
         }
     },
@@ -743,7 +739,7 @@ const Game = {
             ctx.stroke();
             ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 18px sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('⚡ BOOST', 0, 0);
+            ctx.fillText('⚡', 0, 0);
             ctx.restore();
         }
     },

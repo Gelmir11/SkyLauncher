@@ -3,7 +3,7 @@ const Physics = {
     GRAVITY: 0.06,
     AIR_DRAG: 0.998,
     GROUND_Y: 0,
-    CEILING_Y: -2000, // tavan çok yukarıda (-2000px = ~200m yükseklik)
+    CEILING_Y: 20, // orijinal tavan
     WIND_CHANGE_INTERVAL: 120,
 
     windX: 0,
@@ -13,7 +13,7 @@ const Physics = {
 
     init(groundY) {
         this.GROUND_Y = groundY;
-        this.CEILING_Y = -groundY * 3; // ekran yüksekliğinin 3 katı yukarıda
+        this.CEILING_Y = 20; // orijinal tavan
         this.windX = 0;
         this.windY = 0;
         this.windTimer = 0;
@@ -153,11 +153,11 @@ const Physics = {
         plane.landed = false;
     },
 
-    // Kağıt uçak collectible — ekstra itme
+    // Kağıt uçak collectible — hafif ekstra itme
     applyPaperBoost(plane) {
-        const boost = 3 + Math.abs(plane.vx) * 0.3;
+        const boost = 1.2 + Math.abs(plane.vx) * 0.1;
         plane.vx += boost;
-        plane.vy -= 2;
+        plane.vy -= 0.8;
         if (plane.landed) {
             plane.landed = false;
             plane.y = Physics.GROUND_Y - 10;
