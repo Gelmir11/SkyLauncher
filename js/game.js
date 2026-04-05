@@ -21,7 +21,7 @@ const Game = {
     drag: { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 },
 
     coins: [],
-    boosts: [],
+    // boosts kaldırıldı
     obstacles: [],
     ramps: [],
     paperPlanes: [],
@@ -109,7 +109,7 @@ const Game = {
         };
 
         this.coins = Levels.generateCoins(levelNum, this.width, this.height);
-        this.boosts = Levels.generateBoosts(levelNum, this.width, this.height);
+        // boosts kaldırıldı
         this.obstacles = Levels.generateObstacles(levelNum, this.width, this.height);
         this.ramps = Levels.generateRamps(levelNum, this.width, this.height);
         this.paperPlanes = Levels.generatePaperPlanes(levelNum, this.width, this.height);
@@ -209,7 +209,7 @@ const Game = {
             }
 
             this._checkCoinCollision();
-            this._checkBoostCollision();
+            // boosts kaldırıldı
             this._checkObstacleCollision();
             this._checkRampCollision();
             this._checkPaperPlaneCollision();
@@ -266,11 +266,11 @@ const Game = {
                     rotation: 0
                 });
             }
-            // Arada kağıt uçak da ekle
-            if (Math.random() > 0.4) {
+            // Arada kağıt uçak da ekle (rastgele pozisyonlarda)
+            if (Math.random() > 0.35) {
                 this.paperPlanes.push({
-                    x: currentX + 300 + Math.random() * 500,
-                    y: this.groundY * 0.15 + Math.random() * this.groundY * 0.5,
+                    x: currentX + 100 + Math.random() * 700,
+                    y: this.groundY * 0.05 + Math.random() * this.groundY * 0.72,
                     radius: 18,
                     collected: false,
                     bobOffset: Math.random() * Math.PI * 2,
@@ -320,20 +320,6 @@ const Game = {
         }
     },
 
-    _checkBoostCollision() {
-        for (const boost of this.boosts) {
-            if (!boost.active) continue;
-            if (this.plane.x > boost.x - boost.width / 2 && this.plane.x < boost.x + boost.width / 2 &&
-                this.plane.y > boost.y - boost.height / 2 && this.plane.y < boost.y + boost.height / 2) {
-                boost.active = false;
-                this.plane.vx *= 1.6;
-                this.plane.vy *= 0.5;
-                Sounds.play('boost');
-                Particles.add(boost.x, boost.y, 'star', { count: 12, color: '#00e5ff' });
-            }
-        }
-    },
-
     _checkObstacleCollision() {
         for (const obs of this.obstacles) {
             if (obs.hit) continue;
@@ -361,7 +347,9 @@ const Game = {
                 Physics.applyRampBoost(this.plane);
                 Sounds.play('boost');
                 Particles.add(ramp.x, ramp.y - 10, 'star', { count: 10, color: '#ffd54f' });
-                // sadece yıldız efekti, yazı yok
+                Particles.add(ramp.x, ramp.y - 30, 'text', {
+                    text: '🚀 RAMPA!', color: '#ff9800', fontSize: 20, count: 1
+                });
             }
         }
     },
@@ -377,6 +365,9 @@ const Game = {
                 Physics.applyPaperBoost(this.plane);
                 Sounds.play('boost');
                 Particles.add(pp.x, pp.y, 'star', { count: 15, color: '#88ccff' });
+                Particles.add(pp.x, pp.y - 25, 'text', {
+                    text: '✈️ +GÜÇ!', color: '#00e5ff', fontSize: 22, count: 1
+                });
             }
         }
     },
@@ -394,7 +385,7 @@ const Game = {
         if (this.state === 'ready' || this.state === 'aiming') this._drawLaunchPad(ctx);
         if (this.state === 'aiming' && this.drag.active) this._drawAimLine(ctx);
 
-        this._drawBoosts(ctx);
+        // boosts kaldırıldı
         this._drawCoins(ctx);
         this._drawPaperPlanes(ctx);
         this._drawObstacles(ctx);
@@ -454,30 +445,50 @@ const Game = {
             ctx.restore();
         }
 
-        // Bulutlar — detaylı
+        // Bulutlar — dolgun ve göze hitap eden
         for (const cloud of this.clouds) {
-            const cx = ((cloud.x - this.cameraX * cloud.speed) % (this.width + 300) + this.width + 300) % (this.width + 300) - 150;
+            const cx = ((cloud.x - this.cameraX * cloud.speed) % (this.width + 400) + this.width + 400) % (this.width + 400) - 200;
             ctx.save();
             ctx.globalAlpha = cloud.opacity;
 
-            // Gölge
-            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            // Gölge (yumuşak)
+            ctx.fillStyle = 'rgba(0,0,20,0.06)';
             for (const blob of cloud.blobs) {
                 ctx.beginPath();
-                ctx.ellipse(cx + blob.ox + 3, cloud.y + blob.oy + 3, blob.rx, blob.ry, 0, 0, Math.PI * 2);
+                ctx.ellipse(cx + blob.ox + 4, cloud.y + blob.oy + 4, blob.rx * 1.02, blob.ry * 1.02, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // Ana bulut
-            const cloudGrad = ctx.createRadialGradient(cx, cloud.y - 5, 5, cx, cloud.y, cloud.mainR * 1.5);
-            cloudGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
-            cloudGrad.addColorStop(1, 'rgba(220,230,240,0.6)');
+            // Alt katman — hafif renkli (pembe-mavi tint)
+            const t = cloud.tint || 0;
+            const r2 = Math.round(220 + t * 20);
+            const g2 = Math.round(225 + (1 - t) * 15);
+            const b2 = Math.round(235 + t * 10);
+            ctx.fillStyle = `rgba(${r2},${g2},${b2},0.5)`;
+            for (const blob of cloud.blobs) {
+                ctx.beginPath();
+                ctx.ellipse(cx + blob.ox, cloud.y + blob.oy + 2, blob.rx * 1.05, blob.ry * 1.05, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Ana bulut — parlak beyaz gradyan
+            const cloudGrad = ctx.createRadialGradient(cx, cloud.y - cloud.mainR * 0.2, cloud.mainR * 0.2, cx, cloud.y, cloud.mainR * 1.6);
+            cloudGrad.addColorStop(0, 'rgba(255,255,255,0.98)');
+            cloudGrad.addColorStop(0.5, 'rgba(245,248,255,0.85)');
+            cloudGrad.addColorStop(1, `rgba(${r2},${g2},${b2},0.4)`);
             ctx.fillStyle = cloudGrad;
             for (const blob of cloud.blobs) {
                 ctx.beginPath();
                 ctx.ellipse(cx + blob.ox, cloud.y + blob.oy, blob.rx, blob.ry, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
+
+            // Üst highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(cx, cloud.y - cloud.mainR * 0.2, cloud.mainR * 0.5, cloud.mainR * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.restore();
         }
     },
@@ -630,7 +641,10 @@ const Game = {
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 9px Nunito';
             ctx.textAlign = 'center';
-            // yazı yok, sadece simge
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 9px Nunito';
+            ctx.textAlign = 'center';
+            ctx.fillText('+GÜÇ', 0, pp.radius + 12);
             ctx.restore();
         }
     },
@@ -714,32 +728,6 @@ const Game = {
                 ctx.fillStyle = '#f57f17'; ctx.font = `bold ${coin.radius}px Fredoka One`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('$', 0, 1);
             }
-            ctx.restore();
-        }
-    },
-
-    _drawBoosts(ctx) {
-        for (const boost of this.boosts) {
-            if (!boost.active) continue;
-            const sx = boost.x - this.cameraX;
-            if (sx < -80 || sx > this.width + 80) continue;
-            const glow = 0.6 + Math.sin(this.frameCount * 0.08) * 0.4;
-            ctx.save();
-            ctx.translate(sx, boost.y);
-            ctx.beginPath();
-            ctx.roundRect(-boost.width / 2 - 5, -boost.height / 2 - 5, boost.width + 10, boost.height + 10, 10);
-            ctx.fillStyle = `rgba(0,229,255,${glow * 0.2})`;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.roundRect(-boost.width / 2, -boost.height / 2, boost.width, boost.height, 8);
-            ctx.fillStyle = `rgba(0,229,255,${0.15 + glow * 0.1})`;
-            ctx.fill();
-            ctx.strokeStyle = `rgba(0,229,255,${0.6 + glow * 0.4})`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 18px sans-serif';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('⚡', 0, 0);
             ctx.restore();
         }
     },
@@ -830,27 +818,32 @@ const Game = {
 
     // ===== İYİLEŞTİRİLMİŞ ARKA PLAN ÜRETİCİ =====
     _generateBackground() {
-        // Detaylı bulutlar
+        // Detaylı bulutlar — daha dolgun ve güzel
         this.clouds = [];
-        for (let i = 0; i < 12; i++) {
-            const mainR = 25 + Math.random() * 40;
-            const blobCount = 3 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < 16; i++) {
+            const mainR = 30 + Math.random() * 50;
+            const blobCount = 5 + Math.floor(Math.random() * 3); // 5-7 blob
             const blobs = [];
-            for (let b = 0; b < blobCount; b++) {
+            // Merkez blob
+            blobs.push({ ox: 0, oy: 0, rx: mainR * 0.9, ry: mainR * 0.55 });
+            // Çevre blobları
+            for (let b = 1; b < blobCount; b++) {
+                const angle = (b / (blobCount - 1)) * Math.PI - Math.PI * 0.5;
                 blobs.push({
-                    ox: (Math.random() - 0.5) * mainR * 1.8,
-                    oy: (Math.random() - 0.5) * mainR * 0.5,
-                    rx: mainR * (0.5 + Math.random() * 0.5),
-                    ry: mainR * (0.3 + Math.random() * 0.3)
+                    ox: Math.cos(angle) * mainR * 0.7 + (Math.random() - 0.5) * 10,
+                    oy: Math.sin(angle) * mainR * 0.25 + (Math.random() - 0.5) * 5,
+                    rx: mainR * (0.45 + Math.random() * 0.4),
+                    ry: mainR * (0.3 + Math.random() * 0.25)
                 });
             }
             this.clouds.push({
                 x: Math.random() * this.width * 3,
-                y: 40 + Math.random() * this.groundY * 0.45,
+                y: 35 + Math.random() * this.groundY * 0.4,
                 mainR,
                 blobs,
-                speed: 0.03 + Math.random() * 0.12,
-                opacity: 0.25 + Math.random() * 0.35
+                speed: 0.03 + Math.random() * 0.1,
+                opacity: 0.3 + Math.random() * 0.35,
+                tint: Math.random() // 0=beyaz, 1=hafif pembe-mavi
             });
         }
 

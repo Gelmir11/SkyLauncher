@@ -24,7 +24,7 @@ const Levels = {
         const windStrength = Math.min(0.3 + num * 0.06, 3.0);
         const turbulence = Math.min(num * 0.04, 1.5);
         const coinCount = 8 + Math.floor(num * 1.2);
-        const boostCount = Math.max(0, Math.floor((num - 3) / 5));
+        // boostCount kaldırıldı
         const obstacleCount = Math.max(0, Math.floor((num - 5) / 4));
         const rampCount = Math.max(1, Math.floor(num / 6));
         const paperPlaneCount = Math.max(1, Math.floor(num / 4));
@@ -51,7 +51,7 @@ const Levels = {
             windStrength,
             turbulence,
             coinCount,
-            boostCount,
+            // boostCount kaldırıldı
             obstacleCount,
             rampCount,
             paperPlaneCount,
@@ -107,21 +107,8 @@ const Levels = {
         return coins;
     },
 
-    generateBoosts(levelNum, canvasWidth, canvasHeight) {
-        const level = this.get(levelNum);
-        const boosts = [];
-        const groundY = canvasHeight * 0.78;
-        const maxDist = level.targetDistance * 15;
-
-        for (let i = 0; i < level.boostCount; i++) {
-            boosts.push({
-                x: 300 + Math.random() * maxDist * 0.8,
-                y: groundY * 0.15 + Math.random() * groundY * 0.5,
-                width: 60, height: 30,
-                active: true
-            });
-        }
-        return boosts;
+    // generateBoosts kaldırıldı — BOOST sistemi silindi
+    generateBoosts() { return [];
     },
 
     generateObstacles(levelNum, canvasWidth, canvasHeight) {
@@ -170,9 +157,10 @@ const Levels = {
         const maxDist = level.targetDistance * 15;
 
         for (let i = 0; i < level.paperPlaneCount; i++) {
+            // Tamamen rastgele pozisyon
             papers.push({
-                x: 300 + (i + 1) * (maxDist / (level.paperPlaneCount + 1)) + (Math.random() - 0.5) * 300,
-                y: groundY * 0.15 + Math.random() * groundY * 0.55,
+                x: 200 + Math.random() * maxDist,
+                y: groundY * 0.05 + Math.random() * groundY * 0.72,
                 radius: 18,
                 collected: false,
                 bobOffset: Math.random() * Math.PI * 2,
