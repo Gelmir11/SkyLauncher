@@ -248,7 +248,7 @@ const UI = {
     showResult(levelNum, distance, collectedCoins, passed) {
         const level = Levels.get(levelNum);
         const stars = Levels.calculateStars(levelNum, distance);
-        const distanceBonus = Math.floor(distance * 0.3); // azaltılmış mesafe bonusu
+        const distanceBonus = Math.floor(distance * 0.15); // düşük mesafe bonusu
         const starBonus = stars === 3 ? 100 : stars === 2 ? 50 : stars === 1 ? 20 : 0;
         const totalEarned = collectedCoins + distanceBonus + starBonus;
 
