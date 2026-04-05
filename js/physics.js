@@ -155,9 +155,9 @@ const Physics = {
 
     // Kağıt uçak collectible — hafif ekstra itme
     applyPaperBoost(plane) {
-        const boost = 1.2 + Math.abs(plane.vx) * 0.1;
+        const boost = 0.6 + Math.abs(plane.vx) * 0.05;
         plane.vx += boost;
-        plane.vy -= 0.8;
+        plane.vy -= 0.4;
         if (plane.landed) {
             plane.landed = false;
             plane.y = Physics.GROUND_Y - 10;
