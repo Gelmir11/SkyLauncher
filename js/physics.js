@@ -30,7 +30,7 @@ const Physics = {
         return {
             launchPower: 1 + power * 0.10,
             aeroBoost: aero,
-            windResistance: 1 - wind * 0.15,
+            windResistance: 1 - wind * 0.10,
             turboFuel: turbo * 3,
             magnetRange: magnet * 50
         };

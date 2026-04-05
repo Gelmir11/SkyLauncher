@@ -14,7 +14,7 @@ const Shop = {
         {
             key: 'wind', name: 'Rüzgar Kalkanı', icon: '🛡️',
             desc: 'Rüzgar etkisini azaltır', maxLevel: 5,
-            baseCost: 200, costMultiplier: 1.8, effect: '-%15 rüzgar etkisi'
+            baseCost: 200, costMultiplier: 1.8, effect: '-%10 rüzgar etkisi'
         },
         {
             key: 'turbo', name: 'Turbo Yakıt', icon: '⚡',
