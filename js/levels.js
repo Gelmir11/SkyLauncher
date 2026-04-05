@@ -81,7 +81,7 @@ const Levels = {
         if (planeId === 0) return true; // İlk uçak her zaman açık
         const prevPlaneId = planeId - 1;
         // Önceki uçağın 50. levelini geçmiş mi?
-        return Storage.getMaxLevel(prevPlaneId) > 50;
+        return Storage.getMaxLevel(prevPlaneId) > Levels.TOTAL_LEVELS;
     },
 
     getPlaneUnlockText(planeId) {

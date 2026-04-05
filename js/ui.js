@@ -267,10 +267,10 @@ const UI = {
         Storage.setStars(levelNum, stars, planeId);
         Storage.addDistance(distance);
 
-        if (passed && levelNum < Levels.TOTAL_LEVELS) {
+        if (passed) {
             Storage.unlockLevel(levelNum + 1, planeId);
             // 50. level geçilince sonraki uçak açılır
-            if (levelNum === 50) {
+            if (levelNum >= Levels.TOTAL_LEVELS) {
                 const nextPlaneId = planeId + 1;
                 if (nextPlaneId < Airplanes.list.length && !Storage.isPlaneUnlocked(nextPlaneId)) {
                     Storage.unlockPlane(nextPlaneId);
