@@ -19,7 +19,7 @@ const Shop = {
         {
             key: 'turbo', name: 'Turbo Yakıt', icon: '⚡',
             desc: 'Havadayken ekstra itme (Boşluk)', maxLevel: 5,
-            baseCost: 800, costMultiplier: 2.5, effect: '+3 turbo yakıt'
+            fixedCosts: [1000, 2000, 5000, 15000, 35000], effect: '+3 turbo yakıt'
         },
         {
             key: 'magnet', name: 'Para Mıknatısı', icon: '🧲',
@@ -35,6 +35,7 @@ const Shop = {
         if (!upgrade) return Infinity;
         const currentLevel = Storage.getUpgrade(upgradeKey, planeId);
         if (currentLevel >= upgrade.maxLevel) return 0;
+        if (upgrade.fixedCosts) return upgrade.fixedCosts[currentLevel];
         return Math.round(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
     },
 
