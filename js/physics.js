@@ -1,6 +1,6 @@
 // ===== PHYSICS - Fizik Motoru =====
 const Physics = {
-    GRAVITY: 0.15,
+    GRAVITY: 0.06,
     AIR_DRAG: 0.998,
     GROUND_Y: 0, // Canvas'a göre ayarlanacak
     WIND_CHANGE_INTERVAL: 120, // frame
@@ -25,11 +25,11 @@ const Physics = {
         const magnet = Storage.getUpgrade('magnet');
 
         return {
-            launchPower: 1 + power * 0.10,
-            dragReduction: 1 - aero * 0.06,
-            windResistance: 1 - wind * 0.12,
-            turboFuel: turbo * 2,
-            magnetRange: magnet * 40
+            launchPower: 1 + power * 0.12,
+            aeroBoost: aero,          // ham level (drag formulünde kullanılacak)
+            windResistance: 1 - wind * 0.15,
+            turboFuel: turbo * 3,
+            magnetRange: magnet * 50
         };
     },
 
@@ -49,12 +49,16 @@ const Physics = {
             this.turbulence = Math.random() * levelData.turbulence || 0;
         }
 
-        // Yerçekimi
+        // Yerçekimi (glide düşükse daha az yerçekimi etkisi)
         const gravityMod = planeDef.glide || 1;
         plane.vy += this.GRAVITY * gravityMod;
 
-        // Hava sürtünmesi
-        const drag = this.AIR_DRAG * (mults.dragReduction) * (planeDef.drag || 1);
+        // Hava sürtünmesi — upgrade sürtünme KAYBINI azaltır
+        // Base kayıp: 1 - 0.998 = 0.002 → upgrade ile kayıp küçülür
+        const baseDragLoss = (1 - this.AIR_DRAG) * (planeDef.drag || 1);
+        const aeroReduction = 1 - mults.aeroBoost * 0.08; // her level %8 sürtünme azaltma
+        const actualDragLoss = baseDragLoss * Math.max(0.15, aeroReduction);
+        const drag = 1 - actualDragLoss;
         plane.vx *= drag;
         plane.vy *= drag;
 
@@ -70,16 +74,16 @@ const Physics = {
 
         // Lift (kaldırma kuvveti) - hız yeterli ise
         const speed = Math.sqrt(plane.vx * plane.vx + plane.vy * plane.vy);
-        const liftForce = (planeDef.lift || 0) * speed * 0.003;
-        if (speed > 2) {
+        const liftForce = (planeDef.lift || 0) * speed * 0.008;
+        if (speed > 1.5) {
             plane.vy -= liftForce;
         }
 
         // Turbo
         if (plane.turboFuel > 0 && plane.turboActive) {
-            plane.vx += 0.5;
-            plane.vy -= 0.1;
-            plane.turboFuel -= 0.1;
+            plane.vx += 0.8;
+            plane.vy -= 0.25;
+            plane.turboFuel -= 0.08;
             if (plane.turboFuel <= 0) {
                 plane.turboActive = false;
             }
@@ -104,13 +108,13 @@ const Physics = {
             plane.vx *= 0.3;
 
             // Sekme efekti (hız yeterli ise)
-            if (Math.abs(plane.vx) > 3) {
-                plane.y = this.GROUND_Y - 5;
-                plane.vy = -Math.abs(plane.vx) * 0.2;
-                plane.vx *= 0.6;
+            if (Math.abs(plane.vx) > 2) {
+                plane.y = this.GROUND_Y - 8;
+                plane.vy = -Math.abs(plane.vx) * 0.3;
+                plane.vx *= 0.7;
                 plane.landed = false;
                 plane.bounces = (plane.bounces || 0) + 1;
-                if (plane.bounces > 3) plane.landed = true;
+                if (plane.bounces > 5) plane.landed = true;
             }
         }
 
@@ -129,7 +133,7 @@ const Physics = {
     launch(plane, angle, power) {
         const mults = this.getUpgradeMultipliers();
         const planeDef = Airplanes.list[Storage.getSelectedPlane()];
-        const totalPower = power * mults.launchPower * (planeDef.speed || 1);
+        const totalPower = power * mults.launchPower * (planeDef.speed || 1) * 1.2;
 
         plane.vx = Math.cos(angle) * totalPower;
         plane.vy = Math.sin(angle) * totalPower;
