@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sky Launcher - Uçak Fırlatma Oyunu</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+        <!-- Ana Menü -->
+        <div id="main-menu" class="screen active">
+            <div class="menu-title">
+                <span class="title-icon">✈️</span>
+                <h1>SKY LAUNCHER</h1>
+                <p class="subtitle">Gökyüzünü Fethet!</p>
+            </div>
+            <div class="menu-buttons">
+                <button class="btn btn-play" onclick="UI.startGame()">▶ OYNA</button>
+                <button class="btn btn-shop" onclick="UI.openShop()">🛒 MAĞAZA</button>
+                <button class="btn btn-hangar" onclick="UI.openHangar()">🛩️ HANGAR</button>
+            </div>
+            <div class="menu-stats">
+                <span class="coin-display">💰 <span id="menu-coins">0</span></span>
+                <span class="level-display">⭐ Level <span id="menu-level">1</span></span>
+            </div>
+        </div>
+
+        <!-- Level Seçim -->
+        <div id="level-select" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="UI.goBack()">← Geri</button>
+                <h2>Level Seç</h2>
+                <span class="coin-display">💰 <span id="ls-coins">0</span></span>
+            </div>
+            <div id="level-grid" class="level-grid"></div>
+        </div>
+
+        <!-- Mağaza -->
+        <div id="shop-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="UI.goBack()">← Geri</button>
+                <h2>🛒 Mağaza</h2>
+                <span class="coin-display">💰 <span id="shop-coins">0</span></span>
+            </div>
+            <div id="shop-items" class="shop-grid"></div>
+        </div>
+
+        <!-- Hangar -->
+        <div id="hangar-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="UI.goBack()">← Geri</button>
+                <h2>🛩️ Hangar</h2>
+                <span class="coin-display">💰 <span id="hangar-coins">0</span></span>
+            </div>
+            <div id="hangar-planes" class="hangar-grid"></div>
+        </div>
+
+        <!-- Oyun HUD -->
+        <div id="game-hud" class="screen">
+            <div class="hud-top">
+                <div class="hud-left">
+                    <span class="hud-level">Level <span id="hud-level-num">1</span></span>
+                    <span class="hud-target">Hedef: <span id="hud-target">100</span>m</span>
+                </div>
+                <div class="hud-center">
+                    <span class="hud-distance"><span id="hud-distance">0</span>m</span>
+                </div>
+                <div class="hud-right">
+                    <span class="hud-coins">💰 <span id="hud-coins">0</span></span>
+                    <span class="hud-altitude">↑ <span id="hud-altitude">0</span>m</span>
+                </div>
+            </div>
+            <div class="hud-power" id="power-indicator" style="display:none;">
+                <div class="power-bar">
+                    <div class="power-fill" id="power-fill"></div>
+                </div>
+                <span class="power-angle" id="power-angle">45°</span>
+            </div>
+        </div>
+
+        <!-- Level Sonu -->
+        <div id="result-screen" class="screen">
+            <div class="result-box">
+                <h2 id="result-title">Level Tamamlandı!</h2>
+                <div class="result-stars" id="result-stars">★★★</div>
+                <div class="result-stats">
+                    <div class="stat-row"><span>Mesafe:</span><span id="result-distance">0m</span></div>
+                    <div class="stat-row"><span>Toplanan Para:</span><span id="result-collected">0</span></div>
+                    <div class="stat-row"><span>Mesafe Bonusu:</span><span id="result-bonus">0</span></div>
+                    <div class="stat-row"><span>Yıldız Bonusu:</span><span id="result-star-bonus">0</span></div>
+                    <div class="stat-row total"><span>Toplam:</span><span id="result-total">0</span></div>
+                </div>
+                <div class="result-buttons">
+                    <button class="btn btn-retry" onclick="Game.retryLevel()">🔄 Tekrar</button>
+                    <button class="btn btn-next" id="btn-next-level" onclick="Game.nextLevel()">▶ Sonraki</button>
+                    <button class="btn btn-menu" onclick="UI.showMainMenu()">🏠 Menü</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/physics.js"></script>
+    <script src="js/airplane.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

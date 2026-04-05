@@ -1,0 +1,623 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    overflow: hidden;
+    background: #0a0a2e;
+    font-family: 'Nunito', sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.screen {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== ANA MENÜ ===== */
+#main-menu {
+    justify-content: center;
+    gap: 30px;
+    background: linear-gradient(180deg, rgba(10,10,46,0.9) 0%, rgba(20,20,80,0.8) 100%);
+}
+
+.menu-title {
+    text-align: center;
+    animation: float 3s ease-in-out infinite;
+}
+
+.title-icon {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 20px rgba(100,200,255,0.8));
+}
+
+.menu-title h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 56px;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(100,200,255,0.6), 0 4px 8px rgba(0,0,0,0.5);
+    letter-spacing: 4px;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: #88ccff;
+    margin-top: 8px;
+    font-weight: 700;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 280px;
+}
+
+.btn {
+    padding: 14px 32px;
+    font-size: 20px;
+    font-family: 'Fredoka One', cursive;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.btn-play {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    color: #fff;
+    font-size: 24px;
+}
+
+.btn-shop {
+    background: linear-gradient(135deg, #ff6d00, #ff9100);
+    color: #fff;
+}
+
+.btn-hangar {
+    background: linear-gradient(135deg, #2979ff, #448aff);
+    color: #fff;
+}
+
+.btn-retry {
+    background: linear-gradient(135deg, #ff6d00, #ff9100);
+    color: #fff;
+    font-size: 16px;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    color: #fff;
+    font-size: 16px;
+}
+
+.btn-menu {
+    background: linear-gradient(135deg, #546e7a, #78909c);
+    color: #fff;
+    font-size: 16px;
+}
+
+.menu-stats {
+    display: flex;
+    gap: 30px;
+    font-size: 20px;
+    color: #ffd54f;
+    font-weight: 900;
+}
+
+.coin-display {
+    font-size: 18px;
+    color: #ffd54f;
+    font-weight: 900;
+}
+
+.level-display {
+    font-size: 18px;
+    color: #88ccff;
+    font-weight: 900;
+}
+
+/* ===== EKRAN BAŞLIKLARI ===== */
+.screen-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+}
+
+.screen-header h2 {
+    font-family: 'Fredoka One', cursive;
+    color: #fff;
+    font-size: 24px;
+}
+
+.btn-back {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+}
+
+.btn-back:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* ===== LEVEL GRID ===== */
+#level-select {
+    background: linear-gradient(180deg, rgba(10,10,46,0.95) 0%, rgba(20,20,80,0.95) 100%);
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+    width: 100%;
+    max-width: 600px;
+}
+
+.level-btn {
+    aspect-ratio: 1;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.level-btn:hover:not(.locked) {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.05);
+}
+
+.level-btn.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.level-btn.locked::after {
+    content: '🔒';
+    font-size: 18px;
+}
+
+.level-btn.completed {
+    border-color: #00e676;
+    background: rgba(0,230,118,0.15);
+}
+
+.level-btn .stars {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #ffd54f;
+}
+
+/* ===== MAĞAZA ===== */
+#shop-screen {
+    background: linear-gradient(180deg, rgba(10,10,46,0.95) 0%, rgba(40,10,60,0.95) 100%);
+}
+
+.shop-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+    width: 100%;
+    max-width: 500px;
+}
+
+.shop-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    transition: all 0.2s;
+}
+
+.shop-item:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.shop-icon {
+    font-size: 36px;
+    width: 50px;
+    text-align: center;
+}
+
+.shop-info {
+    flex: 1;
+}
+
+.shop-info h3 {
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.shop-info p {
+    color: #aaa;
+    font-size: 13px;
+}
+
+.shop-level-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.shop-level-pip {
+    width: 20px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.15);
+}
+
+.shop-level-pip.filled {
+    background: linear-gradient(135deg, #ffd54f, #ffab00);
+}
+
+.shop-buy-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffd54f, #ffab00);
+    color: #333;
+    font-family: 'Fredoka One', cursive;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.shop-buy-btn:hover {
+    transform: scale(1.05);
+}
+
+.shop-buy-btn.maxed {
+    background: linear-gradient(135deg, #00e676, #00c853);
+    color: #fff;
+    cursor: default;
+}
+
+.shop-buy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== HANGAR ===== */
+#hangar-screen {
+    background: linear-gradient(180deg, rgba(10,10,46,0.95) 0%, rgba(10,30,60,0.95) 100%);
+}
+
+.hangar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+    width: 100%;
+    max-width: 500px;
+}
+
+.hangar-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hangar-item:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.hangar-item.selected {
+    border-color: #00e676;
+    background: rgba(0,230,118,0.15);
+    box-shadow: 0 0 20px rgba(0,230,118,0.2);
+}
+
+.hangar-item.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.hangar-preview {
+    width: 70px;
+    height: 50px;
+}
+
+.hangar-info {
+    flex: 1;
+}
+
+.hangar-info h3 {
+    color: #fff;
+    font-size: 16px;
+}
+
+.hangar-info p {
+    color: #88ccff;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.hangar-stats {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.hangar-stat {
+    font-size: 11px;
+    color: #aaa;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.hangar-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.hangar-badge.active {
+    background: #00e676;
+    color: #1a1a2e;
+}
+
+.hangar-badge.unlock-info {
+    background: rgba(255,255,255,0.1);
+    color: #aaa;
+}
+
+/* ===== OYUN HUD ===== */
+#game-hud {
+    pointer-events: none;
+    background: transparent;
+}
+
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 20px;
+    width: 100%;
+}
+
+.hud-left, .hud-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hud-level, .hud-target {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.hud-center {
+    text-align: center;
+}
+
+.hud-distance {
+    font-family: 'Fredoka One', cursive;
+    font-size: 42px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(100,200,255,0.8), 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.hud-coins {
+    color: #ffd54f;
+    font-size: 16px;
+    font-weight: 900;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.hud-altitude {
+    color: #88ccff;
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.hud-power {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.power-bar {
+    width: 200px;
+    height: 16px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    overflow: hidden;
+}
+
+.power-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #00e676, #ffeb3b, #ff5722);
+    transition: width 0.05s;
+}
+
+.power-angle {
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 18px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* ===== SONUÇ EKRANI ===== */
+#result-screen {
+    justify-content: center;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+}
+
+.result-box {
+    background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 24px;
+    padding: 30px 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.result-box h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 28px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.result-stars {
+    font-size: 48px;
+    margin-bottom: 20px;
+    letter-spacing: 8px;
+}
+
+.result-stats {
+    text-align: left;
+    margin-bottom: 24px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: #ccc;
+    font-size: 15px;
+}
+
+.stat-row.total {
+    color: #ffd54f;
+    font-weight: 900;
+    font-size: 18px;
+    border-bottom: none;
+    border-top: 2px solid rgba(255,213,79,0.3);
+    margin-top: 4px;
+    padding-top: 12px;
+}
+
+.result-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .menu-title h1 { font-size: 36px; }
+    .title-icon { font-size: 48px; }
+    .level-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
+    .hud-distance { font-size: 32px; }
+    .result-box { padding: 20px; }
+    .btn { padding: 12px 24px; font-size: 17px; }
+}
