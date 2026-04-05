@@ -445,49 +445,47 @@ const Game = {
             ctx.restore();
         }
 
-        // Bulutlar — dolgun ve göze hitap eden
+        // Bulutlar — gerçekçi kabarık çizim
         for (const cloud of this.clouds) {
             const cx = ((cloud.x - this.cameraX * cloud.speed) % (this.width + 400) + this.width + 400) % (this.width + 400) - 200;
             ctx.save();
             ctx.globalAlpha = cloud.opacity;
 
-            // Gölge (yumuşak)
-            ctx.fillStyle = 'rgba(0,0,20,0.06)';
-            for (const blob of cloud.blobs) {
+            // 1) Alt gölge (bulutun altında koyu alan)
+            for (const puff of cloud.puffs) {
                 ctx.beginPath();
-                ctx.ellipse(cx + blob.ox + 4, cloud.y + blob.oy + 4, blob.rx * 1.02, blob.ry * 1.02, 0, 0, Math.PI * 2);
+                ctx.arc(cx + puff.ox + 3, cloud.y + puff.oy + 5, puff.r * 0.95, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(180,190,210,0.25)';
                 ctx.fill();
             }
 
-            // Alt katman — hafif renkli (pembe-mavi tint)
-            const t = cloud.tint || 0;
-            const r2 = Math.round(220 + t * 20);
-            const g2 = Math.round(225 + (1 - t) * 15);
-            const b2 = Math.round(235 + t * 10);
-            ctx.fillStyle = `rgba(${r2},${g2},${b2},0.5)`;
-            for (const blob of cloud.blobs) {
+            // 2) Ana gövde — her top için gradyan (üst beyaz, alt gri)
+            for (const puff of cloud.puffs) {
+                const px = cx + puff.ox;
+                const py = cloud.y + puff.oy;
+                const g = ctx.createRadialGradient(px, py - puff.r * 0.3, puff.r * 0.1, px, py + puff.r * 0.2, puff.r);
+                g.addColorStop(0, 'rgba(255,255,255,0.95)');
+                g.addColorStop(0.6, 'rgba(240,244,250,0.85)');
+                g.addColorStop(1, 'rgba(200,210,225,0.3)');
                 ctx.beginPath();
-                ctx.ellipse(cx + blob.ox, cloud.y + blob.oy + 2, blob.rx * 1.05, blob.ry * 1.05, 0, 0, Math.PI * 2);
+                ctx.arc(px, py, puff.r, 0, Math.PI * 2);
+                ctx.fillStyle = g;
                 ctx.fill();
             }
 
-            // Ana bulut — parlak beyaz gradyan
-            const cloudGrad = ctx.createRadialGradient(cx, cloud.y - cloud.mainR * 0.2, cloud.mainR * 0.2, cx, cloud.y, cloud.mainR * 1.6);
-            cloudGrad.addColorStop(0, 'rgba(255,255,255,0.98)');
-            cloudGrad.addColorStop(0.5, 'rgba(245,248,255,0.85)');
-            cloudGrad.addColorStop(1, `rgba(${r2},${g2},${b2},0.4)`);
-            ctx.fillStyle = cloudGrad;
-            for (const blob of cloud.blobs) {
+            // 3) Üst parlaklık (güneş yansıması)
+            for (const puff of cloud.puffs) {
+                if (puff.oy > 0) continue; // sadece üst toplarda
+                const px = cx + puff.ox;
+                const py = cloud.y + puff.oy;
+                const hg = ctx.createRadialGradient(px - puff.r * 0.2, py - puff.r * 0.3, 1, px, py, puff.r * 0.7);
+                hg.addColorStop(0, 'rgba(255,255,255,0.5)');
+                hg.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.beginPath();
-                ctx.ellipse(cx + blob.ox, cloud.y + blob.oy, blob.rx, blob.ry, 0, 0, Math.PI * 2);
+                ctx.arc(px, py, puff.r * 0.7, 0, Math.PI * 2);
+                ctx.fillStyle = hg;
                 ctx.fill();
             }
-
-            // Üst highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(cx, cloud.y - cloud.mainR * 0.2, cloud.mainR * 0.5, cloud.mainR * 0.2, 0, 0, Math.PI * 2);
-            ctx.fill();
 
             ctx.restore();
         }
@@ -818,32 +816,43 @@ const Game = {
 
     // ===== İYİLEŞTİRİLMİŞ ARKA PLAN ÜRETİCİ =====
     _generateBackground() {
-        // Detaylı bulutlar — daha dolgun ve güzel
+        // Gerçekçi kabarık bulutlar
         this.clouds = [];
-        for (let i = 0; i < 16; i++) {
-            const mainR = 30 + Math.random() * 50;
-            const blobCount = 5 + Math.floor(Math.random() * 3); // 5-7 blob
-            const blobs = [];
-            // Merkez blob
-            blobs.push({ ox: 0, oy: 0, rx: mainR * 0.9, ry: mainR * 0.55 });
-            // Çevre blobları
-            for (let b = 1; b < blobCount; b++) {
-                const angle = (b / (blobCount - 1)) * Math.PI - Math.PI * 0.5;
-                blobs.push({
-                    ox: Math.cos(angle) * mainR * 0.7 + (Math.random() - 0.5) * 10,
-                    oy: Math.sin(angle) * mainR * 0.25 + (Math.random() - 0.5) * 5,
-                    rx: mainR * (0.45 + Math.random() * 0.4),
-                    ry: mainR * (0.3 + Math.random() * 0.25)
+        for (let i = 0; i < 14; i++) {
+            const w = 60 + Math.random() * 100; // bulut genişliği
+            const h = w * (0.35 + Math.random() * 0.2); // yükseklik (yassı)
+            const puffCount = 6 + Math.floor(Math.random() * 5); // 6-10 kabarık top
+            const puffs = [];
+            // Üst sıra — büyük kabarık toplar (bulutun tepesi)
+            const topCount = Math.floor(puffCount * 0.6);
+            for (let p = 0; p < topCount; p++) {
+                const t = p / (topCount - 1 || 1); // 0..1
+                const px = (t - 0.5) * w * 0.8;
+                const r = h * (0.4 + Math.random() * 0.3);
+                // Ortadakiler daha büyük (bulut tepesi kabarık)
+                const centerBoost = 1 + (1 - Math.abs(t - 0.5) * 2) * 0.4;
+                puffs.push({
+                    ox: px + (Math.random() - 0.5) * 8,
+                    oy: -h * 0.15 + (Math.random() - 0.5) * h * 0.15,
+                    r: r * centerBoost
+                });
+            }
+            // Alt sıra — geniş ve düz (bulutun tabanı)
+            const botCount = puffCount - topCount;
+            for (let p = 0; p < botCount; p++) {
+                const t = p / (botCount - 1 || 1);
+                puffs.push({
+                    ox: (t - 0.5) * w * 0.9 + (Math.random() - 0.5) * 10,
+                    oy: h * 0.15 + Math.random() * h * 0.1,
+                    r: h * (0.3 + Math.random() * 0.2)
                 });
             }
             this.clouds.push({
                 x: Math.random() * this.width * 3,
-                y: 35 + Math.random() * this.groundY * 0.4,
-                mainR,
-                blobs,
-                speed: 0.03 + Math.random() * 0.1,
-                opacity: 0.3 + Math.random() * 0.35,
-                tint: Math.random() // 0=beyaz, 1=hafif pembe-mavi
+                y: 40 + Math.random() * this.groundY * 0.38,
+                w, h, puffs,
+                speed: 0.02 + Math.random() * 0.08,
+                opacity: 0.6 + Math.random() * 0.3
             });
         }
 
