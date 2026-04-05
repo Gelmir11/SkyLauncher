@@ -28,7 +28,7 @@ const Physics = {
         const magnet = Storage.getUpgrade('magnet', planeId);
 
         return {
-            launchPower: 1 + power * 0.12,
+            launchPower: 1 + power * 0.10,
             aeroBoost: aero,
             windResistance: 1 - wind * 0.15,
             turboFuel: turbo * 3,

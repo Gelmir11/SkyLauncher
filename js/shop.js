@@ -4,7 +4,7 @@ const Shop = {
         {
             key: 'power', name: 'Motor Gücü', icon: '🚀',
             desc: 'Fırlatma hızını artırır', maxLevel: 10,
-            baseCost: 100, costMultiplier: 1.5, effect: '+%12 fırlatma gücü'
+            baseCost: 100, costMultiplier: 1.5, effect: '+%10 fırlatma gücü'
         },
         {
             key: 'aero', name: 'Aerodinamik', icon: '💨',
