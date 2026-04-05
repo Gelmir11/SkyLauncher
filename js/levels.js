@@ -1,10 +1,10 @@
 // ===== LEVELS - 50 Level + Rampa + Kağıt Uçak Collectible (v3) =====
 const Levels = {
-    TOTAL_LEVELS: 400, // 8 uçak × 50 level
+    TOTAL_LEVELS: 50, // her uçak 50 level
     list: [],
 
-    // Uçak açılma seviyeleri: her 50 levelde yeni uçak
-    PLANE_UNLOCK_LEVELS: [1, 51, 101, 151, 201, 251, 301, 351],
+    // Sonraki uçak: mevcut uçağın 50 levelini bitirince açılır
+    PLANE_ORDER: [0, 1, 2, 3, 4, 5, 6, 7],
 
     init() {
         this.list = [];
@@ -76,13 +76,18 @@ const Levels = {
         return distance >= level.stars[0];
     },
 
-    getPlaneUnlockLevel(planeId) {
-        return this.PLANE_UNLOCK_LEVELS[planeId] || 9999;
+    // Önceki uçağın 50 levelini bitirince sonraki açılır
+    isPlaneAvailable(planeId) {
+        if (planeId === 0) return true; // İlk uçak her zaman açık
+        const prevPlaneId = planeId - 1;
+        // Önceki uçağın 50. levelini geçmiş mi?
+        return Storage.getMaxLevel(prevPlaneId) > 50;
     },
 
-    isPlaneAvailable(planeId) {
-        const requiredLevel = this.getPlaneUnlockLevel(planeId);
-        return Storage.getMaxLevel() >= requiredLevel;
+    getPlaneUnlockText(planeId) {
+        if (planeId === 0) return 'Başlangıç uçağı';
+        const prevPlane = Airplanes.list[planeId - 1];
+        return `${prevPlane.name} 50. leveli geç`;
     },
 
     // === Dinamik obje üretimi (mesafeye göre) ===

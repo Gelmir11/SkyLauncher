@@ -55,12 +55,21 @@ const UI = {
         const grid = document.getElementById('level-grid');
         if (!grid) return;
         grid.innerHTML = '';
-        const maxUnlocked = Storage.getMaxLevel();
+        const planeId = Storage.getSelectedPlane();
+        const planeDef = Airplanes.list[planeId];
+        const maxUnlocked = Storage.getMaxLevel(planeId);
+
+        // Uçak başlığı
+        const header = document.createElement('div');
+        header.className = 'shop-plane-header';
+        header.style.gridColumn = '1 / -1';
+        header.innerHTML = `<span class="shop-plane-name">🛩️ ${planeDef.name} — Leveller</span>`;
+        grid.appendChild(header);
 
         for (let i = 1; i <= Levels.TOTAL_LEVELS; i++) {
             const btn = document.createElement('button');
             btn.className = 'level-btn';
-            const stars = Storage.getStars(i);
+            const stars = Storage.getStars(i, planeId);
 
             if (i > maxUnlocked) {
                 btn.classList.add('locked');
@@ -141,20 +150,20 @@ const UI = {
         const selected = Storage.getSelectedPlane();
 
         Airplanes.list.forEach(plane => {
-            const unlockLevel = Levels.getPlaneUnlockLevel(plane.id);
             const unlocked = Levels.isPlaneAvailable(plane.id);
 
             if (unlocked && !Storage.isPlaneUnlocked(plane.id)) {
                 Storage.unlockPlane(plane.id);
             }
             const isSelected = plane.id === selected;
+            const unlockText = Levels.getPlaneUnlockText(plane.id);
+            const planeMaxLvl = Storage.getMaxLevel(plane.id);
+            const progressText = unlocked ? `Level ${Math.min(planeMaxLvl, 50)}/50` : unlockText;
 
             const item = document.createElement('div');
             item.className = `hangar-item ${isSelected ? 'selected' : ''} ${!unlocked ? 'locked' : ''}`;
 
             const previewId = `plane-preview-${plane.id}`;
-            const unlockText = unlockLevel <= 1 ? 'Başlangıç uçağı' :
-                `Level ${unlockLevel} geçince açılır`;
 
             item.innerHTML = `
                 <canvas id="${previewId}" class="hangar-preview" width="70" height="50"></canvas>
@@ -165,9 +174,10 @@ const UI = {
                         <span class="hangar-stat">Hız: ${'●'.repeat(Math.round(plane.speed * 3))}${'○'.repeat(5 - Math.round(plane.speed * 3))}</span>
                         <span class="hangar-stat">Süzülme: ${'●'.repeat(Math.round((1.1 - plane.glide) * 8))}${'○'.repeat(5 - Math.round((1.1 - plane.glide) * 8))}</span>
                     </div>
+                    <div class="hangar-stats"><span class="hangar-stat">${progressText}</span></div>
                 </div>
                 <span class="hangar-badge ${isSelected ? 'active' : 'unlock-info'}">
-                    ${isSelected ? '✓ Seçili' : (!unlocked ? '🔒 Lv.' + unlockLevel : 'Seç')}
+                    ${isSelected ? '✓ Seçili' : (!unlocked ? '🔒' : 'Seç')}
                 </span>
             `;
 
@@ -252,12 +262,20 @@ const UI = {
         const starBonus = stars === 3 ? 100 : stars === 2 ? 50 : stars === 1 ? 20 : 0;
         const totalEarned = collectedCoins + distanceBonus + starBonus;
 
+        const planeId = Storage.getSelectedPlane();
         Storage.addCoins(totalEarned);
-        Storage.setStars(levelNum, stars);
+        Storage.setStars(levelNum, stars, planeId);
         Storage.addDistance(distance);
 
         if (passed && levelNum < Levels.TOTAL_LEVELS) {
-            Storage.unlockLevel(levelNum + 1);
+            Storage.unlockLevel(levelNum + 1, planeId);
+            // 50. level geçilince sonraki uçak açılır
+            if (levelNum === 50) {
+                const nextPlaneId = planeId + 1;
+                if (nextPlaneId < Airplanes.list.length && !Storage.isPlaneUnlocked(nextPlaneId)) {
+                    Storage.unlockPlane(nextPlaneId);
+                }
+            }
         }
 
         document.getElementById('result-title').textContent = passed ? 'Level Tamamlandı!' : 'Tekrar Dene!';

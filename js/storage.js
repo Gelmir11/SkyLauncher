@@ -1,16 +1,15 @@
-// ===== STORAGE - LocalStorage Kayıt Sistemi (v3 - Uçak bazlı upgrade) =====
+// ===== STORAGE - LocalStorage Kayıt Sistemi (v4 - Uçak bazlı level) =====
 const Storage = {
-    KEY: 'sky_launcher_save_v3',
+    KEY: 'sky_launcher_save_v4',
 
     defaultData: {
         coins: 500,
-        currentLevel: 1,
-        maxUnlockedLevel: 1,
         selectedPlane: 0,
         unlockedPlanes: [0],
         // Uçak bazlı upgrade: { planeId: { power:0, aero:0, ... } }
         planeUpgrades: {},
-        levelStars: {},
+        // Uçak bazlı level: { planeId: { maxLevel:1, stars:{}, currentLevel:1 } }
+        planeLevels: {},
         totalDistance: 0,
         totalFlights: 0
     },
@@ -24,6 +23,7 @@ const Storage = {
                 this.data = JSON.parse(saved);
                 this.data = { ...this.defaultData, ...this.data };
                 if (!this.data.planeUpgrades) this.data.planeUpgrades = {};
+                if (!this.data.planeLevels) this.data.planeLevels = {};
             } catch (e) {
                 this.data = JSON.parse(JSON.stringify(this.defaultData));
             }
@@ -48,22 +48,39 @@ const Storage = {
         return false;
     },
 
-    getLevel() { return this.data.currentLevel; },
-    getMaxLevel() { return this.data.maxUnlockedLevel; },
-    setLevel(level) { this.data.currentLevel = level; this.save(); },
-    unlockLevel(level) {
-        if (level > this.data.maxUnlockedLevel) {
-            this.data.maxUnlockedLevel = level;
+    // === UÇAK BAZLI LEVEL SİSTEMİ ===
+    _getPlaneLevels(planeId) {
+        if (planeId === undefined) planeId = this.data.selectedPlane;
+        if (!this.data.planeLevels[planeId]) {
+            this.data.planeLevels[planeId] = { maxLevel: 1, currentLevel: 1, stars: {} };
+        }
+        return this.data.planeLevels[planeId];
+    },
+
+    getLevel(planeId) { return this._getPlaneLevels(planeId).currentLevel; },
+    getMaxLevel(planeId) { return this._getPlaneLevels(planeId).maxLevel; },
+    setLevel(level, planeId) { this._getPlaneLevels(planeId).currentLevel = level; this.save(); },
+    unlockLevel(level, planeId) {
+        const pl = this._getPlaneLevels(planeId);
+        if (level > pl.maxLevel) {
+            pl.maxLevel = level;
             this.save();
         }
     },
 
-    getStars(level) { return this.data.levelStars[level] || 0; },
-    setStars(level, stars) {
-        if (stars > (this.data.levelStars[level] || 0)) {
-            this.data.levelStars[level] = stars;
+    getStars(level, planeId) { return this._getPlaneLevels(planeId).stars[level] || 0; },
+    setStars(level, stars, planeId) {
+        const pl = this._getPlaneLevels(planeId);
+        if (stars > (pl.stars[level] || 0)) {
+            pl.stars[level] = stars;
             this.save();
         }
+    },
+
+    // Seçili uçağın tüm 50 levelini bitirdi mi?
+    isPlaneCompleted(planeId) {
+        if (planeId === undefined) planeId = this.data.selectedPlane;
+        return this.getMaxLevel(planeId) > 50;
     },
 
     getSelectedPlane() { return this.data.selectedPlane; },
