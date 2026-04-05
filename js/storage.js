@@ -1,6 +1,6 @@
-// ===== STORAGE - LocalStorage Kayıt Sistemi =====
+// ===== STORAGE - LocalStorage Kayıt Sistemi (v3 - Uçak bazlı upgrade) =====
 const Storage = {
-    KEY: 'sky_launcher_save',
+    KEY: 'sky_launcher_save_v3',
 
     defaultData: {
         coins: 500,
@@ -8,13 +8,8 @@ const Storage = {
         maxUnlockedLevel: 1,
         selectedPlane: 0,
         unlockedPlanes: [0],
-        upgrades: {
-            power: 0,
-            aero: 0,
-            wind: 0,
-            turbo: 0,
-            magnet: 0
-        },
+        // Uçak bazlı upgrade: { planeId: { power:0, aero:0, ... } }
+        planeUpgrades: {},
         levelStars: {},
         totalDistance: 0,
         totalFlights: 0
@@ -27,14 +22,13 @@ const Storage = {
         if (saved) {
             try {
                 this.data = JSON.parse(saved);
-                // Merge with defaults for new fields
                 this.data = { ...this.defaultData, ...this.data };
-                this.data.upgrades = { ...this.defaultData.upgrades, ...this.data.upgrades };
+                if (!this.data.planeUpgrades) this.data.planeUpgrades = {};
             } catch (e) {
-                this.data = { ...this.defaultData };
+                this.data = JSON.parse(JSON.stringify(this.defaultData));
             }
         } else {
-            this.data = { ...this.defaultData };
+            this.data = JSON.parse(JSON.stringify(this.defaultData));
         }
         this.save();
     },
@@ -44,7 +38,7 @@ const Storage = {
     },
 
     getCoins() { return this.data.coins; },
-    addCoins(amount) { this.data.coins += amount; this.save(); },
+    addCoins(amount) { this.data.coins += Math.floor(amount); this.save(); },
     spendCoins(amount) {
         if (this.data.coins >= amount) {
             this.data.coins -= amount;
@@ -82,16 +76,30 @@ const Storage = {
         }
     },
 
-    getUpgrade(key) { return this.data.upgrades[key] || 0; },
-    upgradeLevel(key) {
-        this.data.upgrades[key] = (this.data.upgrades[key] || 0) + 1;
+    // === UÇAK BAZLI UPGRADE ===
+    _getPlaneUpgrades(planeId) {
+        if (planeId === undefined) planeId = this.data.selectedPlane;
+        if (!this.data.planeUpgrades[planeId]) {
+            this.data.planeUpgrades[planeId] = { power: 0, aero: 0, wind: 0, turbo: 0, magnet: 0 };
+        }
+        return this.data.planeUpgrades[planeId];
+    },
+
+    getUpgrade(key, planeId) {
+        return this._getPlaneUpgrades(planeId)[key] || 0;
+    },
+
+    upgradeLevel(key, planeId) {
+        const ups = this._getPlaneUpgrades(planeId);
+        ups[key] = (ups[key] || 0) + 1;
         this.save();
     },
 
     addDistance(d) { this.data.totalDistance += d; this.data.totalFlights++; this.save(); },
 
     reset() {
-        this.data = { ...this.defaultData };
+        localStorage.removeItem(this.KEY);
+        this.data = JSON.parse(JSON.stringify(this.defaultData));
         this.save();
     }
 };

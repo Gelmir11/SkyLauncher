@@ -1,60 +1,66 @@
-// ===== LEVELS - 30 Level Tanımları =====
+// ===== LEVELS - 50 Level + Rampa + Kağıt Uçak Collectible (v3) =====
 const Levels = {
+    TOTAL_LEVELS: 50,
     list: [],
+
+    // Uçak açılma seviyeleri: 50, 150, 250, 350, 450, 550, 650
+    PLANE_UNLOCK_LEVELS: [1, 50, 150, 250, 350, 450, 550],
 
     init() {
         this.list = [];
-        for (let i = 1; i <= 30; i++) {
+        for (let i = 1; i <= this.TOTAL_LEVELS; i++) {
             this.list.push(this._generateLevel(i));
         }
     },
 
     _generateLevel(num) {
-        // Zorluk kademeli artar
-        const difficulty = 1 + (num - 1) * 0.12;
-        const baseDistance = 50 + num * 35;
+        // Hedef mesafeler daha uzun
+        const baseDistance = 150 + num * 60 + Math.pow(num, 1.4) * 5;
 
-        // Yıldız hedefleri
-        const star1 = Math.round(baseDistance * 0.6);
+        const star1 = Math.round(baseDistance * 0.65);
         const star2 = Math.round(baseDistance * 0.85);
-        const star3 = Math.round(baseDistance * 1.1);
+        const star3 = Math.round(baseDistance * 1.15);
 
-        // Rüzgar ve engeller kademeli artar
-        const windStrength = Math.min(0.3 + num * 0.08, 3.0);
-        const turbulence = Math.min(num * 0.05, 1.5);
-        const coinCount = 5 + Math.floor(num * 1.5);
-        const boostCount = Math.max(0, Math.floor((num - 3) / 4));
-        const obstacleCount = Math.max(0, Math.floor((num - 5) / 3));
+        const windStrength = Math.min(0.3 + num * 0.06, 3.0);
+        const turbulence = Math.min(num * 0.04, 1.5);
+        const coinCount = 8 + Math.floor(num * 1.2);
+        const boostCount = Math.max(0, Math.floor((num - 3) / 5));
+        const obstacleCount = Math.max(0, Math.floor((num - 5) / 4));
+        const rampCount = Math.max(1, Math.floor(num / 6));
+        const paperPlaneCount = Math.max(1, Math.floor(num / 4));
 
-        // Arkaplan renkleri (gün batımı efekti ilerledikçe)
         const themes = [
-            { sky1: '#4fc3f7', sky2: '#0288d1', ground: '#4caf50', name: 'Sabah' },         // 1-5
-            { sky1: '#81d4fa', sky2: '#0277bd', ground: '#66bb6a', name: 'Öğle' },           // 6-10
-            { sky1: '#ffcc02', sky2: '#ff9800', ground: '#8d6e63', name: 'İkindi' },         // 11-15
-            { sky1: '#ff7043', sky2: '#d84315', ground: '#795548', name: 'Gün Batımı' },     // 16-20
-            { sky1: '#5c6bc0', sky2: '#1a237e', ground: '#37474f', name: 'Gece' },           // 21-25
-            { sky1: '#1a0033', sky2: '#4a148c', ground: '#263238', name: 'Uzay' }            // 26-30
+            { sky1: '#87CEEB', sky2: '#4682B4', ground: '#4caf50', groundDark: '#388e3c', name: 'Sabah' },
+            { sky1: '#5dade2', sky2: '#2471a3', ground: '#66bb6a', groundDark: '#43a047', name: 'Öğle' },
+            { sky1: '#f0b27a', sky2: '#e67e22', ground: '#a0522d', groundDark: '#8b4513', name: 'İkindi' },
+            { sky1: '#e74c3c', sky2: '#922b21', ground: '#795548', groundDark: '#5d4037', name: 'Gün Batımı' },
+            { sky1: '#2c3e50', sky2: '#1a252f', ground: '#37474f', groundDark: '#263238', name: 'Alacakaranlık' },
+            { sky1: '#1a1a3e', sky2: '#0d0d26', ground: '#1a237e', groundDark: '#0d1642', name: 'Gece' },
+            { sky1: '#0a001a', sky2: '#1a0033', ground: '#1b0033', groundDark: '#0d001a', name: 'Derin Uzay' },
+            { sky1: '#1a0a2e', sky2: '#2d1b4e', ground: '#311b92', groundDark: '#1a0e52', name: 'Nebula' },
+            { sky1: '#004d40', sky2: '#00251a', ground: '#1b5e20', groundDark: '#0d3311', name: 'Aurora' },
+            { sky1: '#b71c1c', sky2: '#4a0000', ground: '#3e2723', groundDark: '#1b0f0b', name: 'Mars' }
         ];
         const themeIdx = Math.min(Math.floor((num - 1) / 5), themes.length - 1);
-        const theme = themes[themeIdx];
 
         return {
             num,
             name: `Level ${num}`,
-            targetDistance: baseDistance,
+            targetDistance: Math.round(baseDistance),
             stars: [star1, star2, star3],
             windStrength,
             turbulence,
-            difficulty,
             coinCount,
             boostCount,
             obstacleCount,
-            theme
+            rampCount,
+            paperPlaneCount,
+            theme: themes[themeIdx]
         };
     },
 
     get(levelNum) {
-        return this.list[levelNum - 1] || this.list[0];
+        return this.list[Math.min(levelNum - 1, this.list.length - 1)] || this.list[0];
     },
 
     calculateStars(levelNum, distance) {
@@ -70,18 +76,29 @@ const Levels = {
         return distance >= level.stars[0];
     },
 
-    generateCoins(levelNum, canvasWidth, canvasHeight) {
+    getPlaneUnlockLevel(planeId) {
+        return this.PLANE_UNLOCK_LEVELS[planeId] || 9999;
+    },
+
+    isPlaneAvailable(planeId) {
+        const requiredLevel = this.getPlaneUnlockLevel(planeId);
+        return Storage.getMaxLevel() >= requiredLevel;
+    },
+
+    // === Dinamik obje üretimi (mesafeye göre) ===
+    generateCoins(levelNum, canvasWidth, canvasHeight, startDist, endDist) {
         const level = this.get(levelNum);
         const coins = [];
         const groundY = canvasHeight * 0.78;
-        const maxDist = level.targetDistance * 15; // piksel cinsinden tahmini mesafe
+        const start = startDist || 150;
+        const end = endDist || level.targetDistance * 15;
 
         for (let i = 0; i < level.coinCount; i++) {
             coins.push({
-                x: 200 + Math.random() * maxDist,
-                y: groundY * 0.2 + Math.random() * groundY * 0.6,
+                x: start + Math.random() * (end - start),
+                y: groundY * 0.1 + Math.random() * groundY * 0.65,
                 radius: 12,
-                value: 10 + Math.floor(Math.random() * 5) * 10,
+                value: 5 + Math.floor(Math.random() * 3) * 5, // 5-15 arası (azaltılmış)
                 collected: false,
                 bobOffset: Math.random() * Math.PI * 2,
                 rotation: 0
@@ -100,8 +117,7 @@ const Levels = {
             boosts.push({
                 x: 300 + Math.random() * maxDist * 0.8,
                 y: groundY * 0.15 + Math.random() * groundY * 0.5,
-                width: 60,
-                height: 30,
+                width: 60, height: 30,
                 active: true
             });
         }
@@ -127,6 +143,43 @@ const Levels = {
             });
         }
         return obstacles;
+    },
+
+    generateRamps(levelNum, canvasWidth, canvasHeight) {
+        const level = this.get(levelNum);
+        const ramps = [];
+        const groundY = canvasHeight * 0.78;
+        const maxDist = level.targetDistance * 15;
+
+        for (let i = 0; i < level.rampCount; i++) {
+            ramps.push({
+                x: 400 + (i + 1) * (maxDist / (level.rampCount + 1)) + (Math.random() - 0.5) * 200,
+                y: groundY,
+                width: 80,
+                height: 30,
+                used: false
+            });
+        }
+        return ramps;
+    },
+
+    generatePaperPlanes(levelNum, canvasWidth, canvasHeight) {
+        const level = this.get(levelNum);
+        const papers = [];
+        const groundY = canvasHeight * 0.78;
+        const maxDist = level.targetDistance * 15;
+
+        for (let i = 0; i < level.paperPlaneCount; i++) {
+            papers.push({
+                x: 300 + (i + 1) * (maxDist / (level.paperPlaneCount + 1)) + (Math.random() - 0.5) * 300,
+                y: groundY * 0.15 + Math.random() * groundY * 0.55,
+                radius: 18,
+                collected: false,
+                bobOffset: Math.random() * Math.PI * 2,
+                rotation: 0
+            });
+        }
+        return papers;
     }
 };
 

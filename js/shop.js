@@ -1,86 +1,66 @@
-// ===== SHOP - Mağaza Sistemi =====
+// ===== SHOP - Uçak Bazlı Mağaza Sistemi (v3) =====
 const Shop = {
     upgrades: [
         {
-            key: 'power',
-            name: 'Motor Gücü',
-            icon: '🚀',
-            desc: 'Fırlatma hızını artırır',
-            maxLevel: 10,
-            baseCost: 100,
-            costMultiplier: 1.5,
-            effect: '+%10 fırlatma gücü'
+            key: 'power', name: 'Motor Gücü', icon: '🚀',
+            desc: 'Fırlatma hızını artırır', maxLevel: 10,
+            baseCost: 100, costMultiplier: 1.5, effect: '+%12 fırlatma gücü'
         },
         {
-            key: 'aero',
-            name: 'Aerodinamik',
-            icon: '💨',
-            desc: 'Hava sürtünmesini azaltır',
-            maxLevel: 10,
-            baseCost: 120,
-            costMultiplier: 1.5,
-            effect: '-%6 hava direnci'
+            key: 'aero', name: 'Aerodinamik', icon: '💨',
+            desc: 'Hava sürtünmesini azaltır', maxLevel: 10,
+            baseCost: 120, costMultiplier: 1.5, effect: '-%8 hava direnci'
         },
         {
-            key: 'wind',
-            name: 'Rüzgar Kalkanı',
-            icon: '🛡️',
-            desc: 'Rüzgar etkisini azaltır',
-            maxLevel: 5,
-            baseCost: 200,
-            costMultiplier: 1.8,
-            effect: '-%12 rüzgar etkisi'
+            key: 'wind', name: 'Rüzgar Kalkanı', icon: '🛡️',
+            desc: 'Rüzgar etkisini azaltır', maxLevel: 5,
+            baseCost: 200, costMultiplier: 1.8, effect: '-%15 rüzgar etkisi'
         },
         {
-            key: 'turbo',
-            name: 'Turbo Yakıt',
-            icon: '⚡',
-            desc: 'Havadayken ekstra itme (Boşluk tuşu)',
-            maxLevel: 5,
-            baseCost: 300,
-            costMultiplier: 2.0,
-            effect: '+2 turbo yakıt'
+            key: 'turbo', name: 'Turbo Yakıt', icon: '⚡',
+            desc: 'Havadayken ekstra itme (Boşluk)', maxLevel: 5,
+            baseCost: 300, costMultiplier: 2.0, effect: '+3 turbo yakıt'
         },
         {
-            key: 'magnet',
-            name: 'Para Mıknatısı',
-            icon: '🧲',
-            desc: 'Yakındaki paraları çeker',
-            maxLevel: 5,
-            baseCost: 250,
-            costMultiplier: 1.8,
-            effect: '+40px çekim mesafesi'
+            key: 'magnet', name: 'Para Mıknatısı', icon: '🧲',
+            desc: 'Yakındaki paraları çeker', maxLevel: 5,
+            baseCost: 250, costMultiplier: 1.8, effect: '+50px çekim'
         }
     ],
 
-    getCost(upgradeKey) {
+    // Seçili uçağın upgrade maliyeti
+    getCost(upgradeKey, planeId) {
+        if (planeId === undefined) planeId = Storage.getSelectedPlane();
         const upgrade = this.upgrades.find(u => u.key === upgradeKey);
         if (!upgrade) return Infinity;
-        const currentLevel = Storage.getUpgrade(upgradeKey);
+        const currentLevel = Storage.getUpgrade(upgradeKey, planeId);
         if (currentLevel >= upgrade.maxLevel) return 0;
         return Math.round(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
     },
 
-    canBuy(upgradeKey) {
-        const cost = this.getCost(upgradeKey);
+    canBuy(upgradeKey, planeId) {
+        if (planeId === undefined) planeId = Storage.getSelectedPlane();
+        const cost = this.getCost(upgradeKey, planeId);
         const upgrade = this.upgrades.find(u => u.key === upgradeKey);
-        const currentLevel = Storage.getUpgrade(upgradeKey);
+        const currentLevel = Storage.getUpgrade(upgradeKey, planeId);
         return cost > 0 && currentLevel < upgrade.maxLevel && Storage.getCoins() >= cost;
     },
 
-    buy(upgradeKey) {
-        if (!this.canBuy(upgradeKey)) return false;
-        const cost = this.getCost(upgradeKey);
+    buy(upgradeKey, planeId) {
+        if (planeId === undefined) planeId = Storage.getSelectedPlane();
+        if (!this.canBuy(upgradeKey, planeId)) return false;
+        const cost = this.getCost(upgradeKey, planeId);
         if (Storage.spendCoins(cost)) {
-            Storage.upgradeLevel(upgradeKey);
+            Storage.upgradeLevel(upgradeKey, planeId);
             Sounds.play('buy');
             return true;
         }
         return false;
     },
 
-    isMaxed(upgradeKey) {
+    isMaxed(upgradeKey, planeId) {
+        if (planeId === undefined) planeId = Storage.getSelectedPlane();
         const upgrade = this.upgrades.find(u => u.key === upgradeKey);
-        return Storage.getUpgrade(upgradeKey) >= upgrade.maxLevel;
+        return Storage.getUpgrade(upgradeKey, planeId) >= upgrade.maxLevel;
     }
 };

@@ -612,12 +612,63 @@ canvas {
     flex-wrap: wrap;
 }
 
+/* ===== TURBO ÇUBUĞU ===== */
+.hud-turbo {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.turbo-label {
+    color: #ffab00;
+    font-family: 'Fredoka One', cursive;
+    font-size: 13px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+.turbo-bar {
+    width: 160px;
+    height: 12px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 6px;
+    border: 1.5px solid rgba(255,171,0,0.4);
+    overflow: hidden;
+}
+
+.turbo-bar-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #ff9800, #ffeb3b);
+    transition: width 0.1s;
+}
+
+/* ===== MAĞAZA UÇAK BAŞLIĞI ===== */
+.shop-plane-header {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 4px;
+}
+
+.shop-plane-name {
+    color: #88ccff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 16px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
     .menu-title h1 { font-size: 36px; }
     .title-icon { font-size: 48px; }
-    .level-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
+    .level-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px; }
     .hud-distance { font-size: 32px; }
     .result-box { padding: 20px; }
     .btn { padding: 12px 24px; font-size: 17px; }
+    .turbo-bar { width: 120px; }
 }
