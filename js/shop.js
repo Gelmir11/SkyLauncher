@@ -28,6 +28,9 @@ const Shop = {
         }
     ],
 
+    // Uçak bazlı fiyat çarpanı — her uçakta fiyatlar artıyor
+    PLANE_COST_MULTIPLIER: [1, 1.8, 3, 5, 8, 13, 20, 30],
+
     // Seçili uçağın upgrade maliyeti
     getCost(upgradeKey, planeId) {
         if (planeId === undefined) planeId = Storage.getSelectedPlane();
@@ -35,8 +38,9 @@ const Shop = {
         if (!upgrade) return Infinity;
         const currentLevel = Storage.getUpgrade(upgradeKey, planeId);
         if (currentLevel >= upgrade.maxLevel) return 0;
-        if (upgrade.fixedCosts) return upgrade.fixedCosts[currentLevel];
-        return Math.round(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
+        const planeMult = this.PLANE_COST_MULTIPLIER[planeId] || 1;
+        if (upgrade.fixedCosts) return Math.round(upgrade.fixedCosts[currentLevel] * planeMult);
+        return Math.round(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel) * planeMult);
     },
 
     canBuy(upgradeKey, planeId) {
