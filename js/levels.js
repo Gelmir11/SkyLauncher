@@ -1,10 +1,10 @@
 // ===== LEVELS - 50 Level + Rampa + Kağıt Uçak Collectible (v3) =====
 const Levels = {
-    TOTAL_LEVELS: 350, // 7 uçak × 50 level
+    TOTAL_LEVELS: 400, // 8 uçak × 50 level
     list: [],
 
     // Uçak açılma seviyeleri: her 50 levelde yeni uçak
-    PLANE_UNLOCK_LEVELS: [1, 51, 101, 151, 201, 251, 301],
+    PLANE_UNLOCK_LEVELS: [1, 51, 101, 151, 201, 251, 301, 351],
 
     init() {
         this.list = [];

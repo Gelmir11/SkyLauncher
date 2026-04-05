@@ -129,9 +129,87 @@ const Airplanes = {
         },
         {
             id: 3,
+            name: 'Çelik Kartal',
+            desc: 'Metal gövde, mükemmel denge',
+            unlockLevel: 151,
+            speed: 1.18,
+            drag: 0.955,
+            glide: 0.87,
+            lift: 0.55,
+            color1: '#78909c',
+            color2: '#455a64',
+            trailColor: 'rgba(120,144,156,0.35)',
+            draw(ctx, x, y, angle, scale = 1) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.scale(scale, scale);
+                // Gövde (metalik)
+                ctx.beginPath();
+                ctx.moveTo(26, 0);
+                ctx.quadraticCurveTo(22, -5, 12, -5);
+                ctx.lineTo(-16, -4);
+                ctx.lineTo(-20, 0);
+                ctx.lineTo(-16, 4);
+                ctx.lineTo(12, 5);
+                ctx.quadraticCurveTo(22, 5, 26, 0);
+                const bodyGrad = ctx.createLinearGradient(0, -5, 0, 5);
+                bodyGrad.addColorStop(0, '#b0bec5');
+                bodyGrad.addColorStop(0.4, this.color1);
+                bodyGrad.addColorStop(1, this.color2);
+                ctx.fillStyle = bodyGrad;
+                ctx.fill();
+                ctx.strokeStyle = '#546e7a';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+                // Kanatlar (geniş, geriye doğru)
+                ctx.beginPath();
+                ctx.moveTo(2, -5);
+                ctx.lineTo(-6, -22);
+                ctx.lineTo(-14, -20);
+                ctx.lineTo(-8, -5);
+                ctx.fillStyle = this.color2;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(2, 5);
+                ctx.lineTo(-6, 22);
+                ctx.lineTo(-14, 20);
+                ctx.lineTo(-8, 5);
+                ctx.fill();
+                // Kuyruk (V şekil)
+                ctx.beginPath();
+                ctx.moveTo(-18, 0);
+                ctx.lineTo(-24, -10);
+                ctx.lineTo(-22, -9);
+                ctx.lineTo(-18, -2);
+                ctx.fillStyle = '#546e7a';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-18, 0);
+                ctx.lineTo(-24, 10);
+                ctx.lineTo(-22, 9);
+                ctx.lineTo(-18, 2);
+                ctx.fill();
+                // Kokpit
+                ctx.beginPath();
+                ctx.ellipse(14, 0, 6, 3, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#cfd8dc';
+                ctx.fill();
+                // Motor çıkış
+                ctx.beginPath();
+                ctx.moveTo(-20, -1.5);
+                ctx.lineTo(-24 - Math.random() * 4, 0);
+                ctx.lineTo(-20, 1.5);
+                ctx.fillStyle = '#ff8a65';
+                ctx.fill();
+                ctx.restore();
+            }
+        },
+        {
+            id: 4,
             name: 'Jet Uçak',
             desc: 'Yüksek hız, adrenalin dolu',
-            unlockLevel: 151,
+            unlockLevel: 201,
             speed: 1.25,
             drag: 0.98,
             glide: 0.95,
@@ -186,10 +264,10 @@ const Airplanes = {
             }
         },
         {
-            id: 4,
+            id: 5,
             name: 'Stealth Bombardıman',
             desc: 'Rüzgar? Hangi rüzgar?',
-            unlockLevel: 201,
+            unlockLevel: 251,
             speed: 1.15,
             drag: 0.955,
             glide: 0.88,
@@ -229,10 +307,10 @@ const Airplanes = {
             }
         },
         {
-            id: 5,
+            id: 6,
             name: 'Roket Uçak',
             desc: 'TURBO! Ekstra yakıtla uç',
-            unlockLevel: 251,
+            unlockLevel: 301,
             speed: 1.35,
             drag: 0.985,
             glide: 1.0,
@@ -298,10 +376,10 @@ const Airplanes = {
             }
         },
         {
-            id: 6,
+            id: 7,
             name: 'Uzay Mekiği',
             desc: 'Efsanevi! Gökyüzünün efendisi',
-            unlockLevel: 301,
+            unlockLevel: 351,
             speed: 1.5,
             drag: 0.95,
             glide: 0.82,
