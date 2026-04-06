@@ -1,9 +1,10 @@
-// ===== PHYSICS - Fizik Motoru =====
+// ===== PHYSICS - Fizik Motoru (v3) =====
 const Physics = {
-    GRAVITY: 0.15,
+    GRAVITY: 0.06,
     AIR_DRAG: 0.998,
-    GROUND_Y: 0, // Canvas'a göre ayarlanacak
-    WIND_CHANGE_INTERVAL: 120, // frame
+    GROUND_Y: 0,
+    CEILING_Y: 20, // orijinal tavan
+    WIND_CHANGE_INTERVAL: 120,
 
     windX: 0,
     windY: 0,
@@ -12,24 +13,26 @@ const Physics = {
 
     init(groundY) {
         this.GROUND_Y = groundY;
+        this.CEILING_Y = 20; // orijinal tavan
         this.windX = 0;
         this.windY = 0;
         this.windTimer = 0;
     },
 
     getUpgradeMultipliers() {
-        const power = Storage.getUpgrade('power');
-        const aero = Storage.getUpgrade('aero');
-        const wind = Storage.getUpgrade('wind');
-        const turbo = Storage.getUpgrade('turbo');
-        const magnet = Storage.getUpgrade('magnet');
+        const planeId = Storage.getSelectedPlane();
+        const power = Storage.getUpgrade('power', planeId);
+        const aero = Storage.getUpgrade('aero', planeId);
+        const wind = Storage.getUpgrade('wind', planeId);
+        const turbo = Storage.getUpgrade('turbo', planeId);
+        const magnet = Storage.getUpgrade('magnet', planeId);
 
         return {
             launchPower: 1 + power * 0.10,
-            dragReduction: 1 - aero * 0.06,
-            windResistance: 1 - wind * 0.12,
-            turboFuel: turbo * 2,
-            magnetRange: magnet * 40
+            aeroBoost: aero,
+            windResistance: 1 - wind * 0.10,
+            turboFuel: turbo * 3,
+            magnetRange: magnet * 50
         };
     },
 
@@ -46,7 +49,7 @@ const Physics = {
             const windStrength = (levelData.windStrength || 1) * mults.windResistance;
             this.windX = (Math.random() - 0.5) * 2 * windStrength;
             this.windY = (Math.random() - 0.3) * windStrength * 0.5;
-            this.turbulence = Math.random() * levelData.turbulence || 0;
+            this.turbulence = Math.random() * (levelData.turbulence || 0);
         }
 
         // Yerçekimi
@@ -54,11 +57,14 @@ const Physics = {
         plane.vy += this.GRAVITY * gravityMod;
 
         // Hava sürtünmesi
-        const drag = this.AIR_DRAG * (mults.dragReduction) * (planeDef.drag || 1);
+        const baseDragLoss = (1 - this.AIR_DRAG) * (planeDef.drag || 1);
+        const aeroReduction = 1 - mults.aeroBoost * 0.08;
+        const actualDragLoss = baseDragLoss * Math.max(0.15, aeroReduction);
+        const drag = 1 - actualDragLoss;
         plane.vx *= drag;
         plane.vy *= drag;
 
-        // Rüzgar etkisi
+        // Rüzgar
         plane.vx += this.windX * 0.02;
         plane.vy += this.windY * 0.01;
 
@@ -68,18 +74,18 @@ const Physics = {
             plane.vy += (Math.random() - 0.5) * this.turbulence * 0.05;
         }
 
-        // Lift (kaldırma kuvveti) - hız yeterli ise
+        // Lift
         const speed = Math.sqrt(plane.vx * plane.vx + plane.vy * plane.vy);
-        const liftForce = (planeDef.lift || 0) * speed * 0.003;
-        if (speed > 2) {
+        const liftForce = (planeDef.lift || 0) * speed * 0.008;
+        if (speed > 1.5) {
             plane.vy -= liftForce;
         }
 
-        // Turbo
+        // Turbo (azaltılmış güç)
         if (plane.turboFuel > 0 && plane.turboActive) {
-            plane.vx += 0.5;
+            plane.vx += 0.35;
             plane.vy -= 0.1;
-            plane.turboFuel -= 0.1;
+            plane.turboFuel -= 0.06;
             if (plane.turboFuel <= 0) {
                 plane.turboActive = false;
             }
@@ -89,35 +95,35 @@ const Physics = {
         plane.x += plane.vx;
         plane.y += plane.vy;
 
-        // Açı hesapla
+        // Açı
         plane.angle = Math.atan2(plane.vy, plane.vx);
 
-        // Mesafe hesapla
+        // Mesafe & yükseklik
         plane.distance = Math.max(plane.distance, (plane.x - plane.startX) / 10);
         plane.altitude = Math.max(0, (this.GROUND_Y - plane.y) / 10);
 
-        // Yere çarpma kontrolü
+        // Yere çarpma
         if (plane.y >= this.GROUND_Y) {
             plane.y = this.GROUND_Y;
             plane.landed = true;
             plane.vy = 0;
             plane.vx *= 0.3;
 
-            // Sekme efekti (hız yeterli ise)
-            if (Math.abs(plane.vx) > 3) {
-                plane.y = this.GROUND_Y - 5;
-                plane.vy = -Math.abs(plane.vx) * 0.2;
-                plane.vx *= 0.6;
+            // Sekme
+            if (Math.abs(plane.vx) > 2) {
+                plane.y = this.GROUND_Y - 8;
+                plane.vy = -Math.abs(plane.vx) * 0.3;
+                plane.vx *= 0.7;
                 plane.landed = false;
                 plane.bounces = (plane.bounces || 0) + 1;
-                if (plane.bounces > 3) plane.landed = true;
+                if (plane.bounces > 5) plane.landed = true;
             }
         }
 
-        // Tavan kontrolü
-        if (plane.y < 20) {
-            plane.y = 20;
-            plane.vy = Math.abs(plane.vy) * 0.5;
+        // Tavan — çok yukarıda, yumuşak geri itme
+        if (plane.y < this.CEILING_Y) {
+            plane.y = this.CEILING_Y;
+            plane.vy = Math.abs(plane.vy) * 0.3;
         }
 
         // Hız çok düşük = iniş
@@ -129,12 +135,32 @@ const Physics = {
     launch(plane, angle, power) {
         const mults = this.getUpgradeMultipliers();
         const planeDef = Airplanes.list[Storage.getSelectedPlane()];
-        const totalPower = power * mults.launchPower * (planeDef.speed || 1);
+        const totalPower = power * mults.launchPower * (planeDef.speed || 1) * 1.2;
 
         plane.vx = Math.cos(angle) * totalPower;
         plane.vy = Math.sin(angle) * totalPower;
         plane.launched = true;
         plane.startX = plane.x;
         plane.turboFuel = mults.turboFuel;
+        plane.maxTurboFuel = mults.turboFuel;
+    },
+
+    // Rampa çarpması — uçağa güç ver
+    applyRampBoost(plane) {
+        plane.vy = -Math.abs(plane.vx) * 0.5 - 3;
+        plane.vx *= 1.15;
+        plane.bounces = 0;
+        plane.landed = false;
+    },
+
+    // Kağıt uçak collectible — hafif ekstra itme
+    applyPaperBoost(plane) {
+        const boost = 0.6 + Math.abs(plane.vx) * 0.05;
+        plane.vx += boost;
+        plane.vy -= 0.4;
+        if (plane.landed) {
+            plane.landed = false;
+            plane.y = Physics.GROUND_Y - 10;
+        }
     }
 };
