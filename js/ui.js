@@ -259,7 +259,10 @@ const UI = {
     showResult(levelNum, distance, collectedCoins, passed) {
         const level = Levels.get(levelNum);
         const stars = Levels.calculateStars(levelNum, distance);
-        const distanceBonus = Math.floor(distance * 0.05); // çok düşük mesafe bonusu
+        // Mesafe bonusu: hedef mesafeye oranla, fazlası azalan getiri
+        const target = level.stars[0];
+        const ratio = Math.min(distance / target, 3); // max 3x hedef kadar sayılır
+        const distanceBonus = Math.floor(target * 0.05 * ratio);
         const starBonus = stars === 3 ? 100 : stars === 2 ? 50 : stars === 1 ? 20 : 0;
         const totalEarned = collectedCoins + distanceBonus + starBonus;
 
