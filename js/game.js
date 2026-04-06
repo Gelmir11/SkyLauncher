@@ -248,16 +248,24 @@ const Game = {
         Particles.update();
     },
 
-    // === DİNAMİK PARA ÜRETİMİ (800m+ sorunu çözümü) ===
+    // === DİNAMİK PARA ÜRETİMİ — hıza göre uyarlanır ===
     _dynamicCoinGeneration() {
         const currentX = this.plane.x;
-        const genThreshold = 800; // her 800px'de yeni paralar
-        if (currentX > this.lastCoinGenX + genThreshold) {
-            this.lastCoinGenX = currentX;
+        const speed = Math.abs(this.plane.vx);
+        // Hız yüksekse daha ilerisini önceden üret
+        const lookAhead = Math.max(400, speed * 30); // hıza orantılı ön üretim mesafesi
+        const genThreshold = 400; // her 400px'de üretim kontrol
+
+        // Birden fazla eşik atlandıysa (hızlı uçuş) hepsini üret
+        while (currentX + lookAhead > this.lastCoinGenX + genThreshold) {
+            this.lastCoinGenX += genThreshold;
+            const genX = this.lastCoinGenX;
+
+            // Paralar
             const count = 3 + Math.floor(Math.random() * 4);
             for (let i = 0; i < count; i++) {
                 this.coins.push({
-                    x: currentX + 200 + Math.random() * 600,
+                    x: genX + Math.random() * 400,
                     y: this.groundY * 0.1 + Math.random() * this.groundY * 0.65,
                     radius: 12,
                     value: 2 + Math.floor(Math.random() * 3) * 2,
@@ -266,10 +274,10 @@ const Game = {
                     rotation: 0
                 });
             }
-            // Arada kağıt uçak da ekle (rastgele pozisyonlarda)
+            // Kağıt uçak
             if (Math.random() > 0.35) {
                 this.paperPlanes.push({
-                    x: currentX + 100 + Math.random() * 700,
+                    x: genX + Math.random() * 400,
                     y: this.groundY * 0.05 + Math.random() * this.groundY * 0.72,
                     radius: 18,
                     collected: false,
@@ -277,10 +285,10 @@ const Game = {
                     rotation: 0
                 });
             }
-            // Arada rampa ekle
+            // Rampa
             if (Math.random() > 0.5) {
                 this.ramps.push({
-                    x: currentX + 400 + Math.random() * 400,
+                    x: genX + 100 + Math.random() * 300,
                     y: this.groundY,
                     width: 80, height: 30,
                     used: false
