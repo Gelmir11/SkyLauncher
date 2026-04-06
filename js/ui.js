@@ -274,6 +274,7 @@ const UI = {
         Storage.setStars(levelNum, stars, planeId);
         Storage.addDistance(distance);
 
+        let unlockedNewPlane = null;
         if (passed) {
             Storage.unlockLevel(levelNum + 1, planeId);
             // 50. level geçilince sonraki uçak açılır
@@ -281,8 +282,22 @@ const UI = {
                 const nextPlaneId = planeId + 1;
                 if (nextPlaneId < Airplanes.list.length && !Storage.isPlaneUnlocked(nextPlaneId)) {
                     Storage.unlockPlane(nextPlaneId);
+                    unlockedNewPlane = Airplanes.list[nextPlaneId];
                 }
             }
+        }
+
+        // Yeni uçak açıldı mı bilgilendirmesi
+        const unlockMsg = document.getElementById('unlock-message');
+        if (unlockedNewPlane) {
+            unlockMsg.style.display = 'block';
+            unlockMsg.innerHTML = `
+                <span class="unlock-icon">🎉</span>
+                <span class="unlock-text">Yeni Uçak Açıldı!</span>
+                <span class="unlock-name">🛩️ ${unlockedNewPlane.name}</span>
+            `;
+        } else {
+            unlockMsg.style.display = 'none';
         }
 
         document.getElementById('result-title').textContent = passed ? 'Level Tamamlandı!' : 'Tekrar Dene!';
