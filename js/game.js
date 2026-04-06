@@ -252,9 +252,9 @@ const Game = {
     _dynamicCoinGeneration() {
         const currentX = this.plane.x;
         const speed = Math.abs(this.plane.vx);
-        // Hız yüksekse daha ilerisini önceden üret
-        const lookAhead = Math.max(400, speed * 30); // hıza orantılı ön üretim mesafesi
-        const genThreshold = 400; // her 400px'de üretim kontrol
+        // Ekranın 3 katı ilerisini önceden üret — uçak varmadan hazır olsun
+        const lookAhead = this.width * 3 + speed * 60;
+        const genThreshold = 400;
 
         // Birden fazla eşik atlandıysa (hızlı uçuş) hepsini üret
         while (currentX + lookAhead > this.lastCoinGenX + genThreshold) {
