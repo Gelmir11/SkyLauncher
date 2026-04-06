@@ -76,8 +76,9 @@ const UI = {
                 btn.innerHTML = `<span>${i}</span>`;
             } else {
                 if (stars > 0) btn.classList.add('completed');
-                const starText = '★'.repeat(stars) + '☆'.repeat(3 - stars);
-                btn.innerHTML = `<span>${i}</span><span class="stars">${starText}</span>`;
+                const filled = '<span class="star-on">★</span>'.repeat(stars);
+                const empty = '<span class="star-off">★</span>'.repeat(3 - stars);
+                btn.innerHTML = `<span>${i}</span><span class="stars">${filled}${empty}</span>`;
                 btn.onclick = () => {
                     Sounds.play('click');
                     Game.startLevel(i);
