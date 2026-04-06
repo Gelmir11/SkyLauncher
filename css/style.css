@@ -257,9 +257,10 @@ canvas {
 }
 
 .level-btn .stars {
-    font-size: 10px;
-    letter-spacing: 2px;
+    font-size: 16px;
+    letter-spacing: 3px;
     color: #ffd54f;
+    text-shadow: 0 0 6px rgba(255,213,79,0.6);
 }
 
 /* ===== MAĞAZA ===== */
