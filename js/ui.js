@@ -263,10 +263,13 @@ const UI = {
         const target = level.stars[0];
         const ratio = Math.min(distance / target, 3); // max 3x hedef kadar sayılır
         const distanceBonus = Math.floor(target * 0.05 * ratio);
-        const starBonus = stars === 3 ? 100 : stars === 2 ? 50 : stars === 1 ? 20 : 0;
-        const totalEarned = collectedCoins + distanceBonus + starBonus;
-
+        // Yıldız bonusu: sadece öncekinden fazla yıldız aldıysan fark kadar bonus
         const planeId = Storage.getSelectedPlane();
+        const prevStars = Storage.getStars(levelNum, planeId);
+        const newStars = Math.max(stars - prevStars, 0); // sadece yeni yıldızlar
+        const starValues = [0, 20, 50, 100];
+        const starBonus = newStars > 0 ? starValues[stars] - starValues[prevStars] : 0;
+        const totalEarned = collectedCoins + distanceBonus + Math.max(0, starBonus);
         Storage.addCoins(totalEarned);
         Storage.setStars(levelNum, stars, planeId);
         Storage.addDistance(distance);
