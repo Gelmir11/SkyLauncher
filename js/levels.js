@@ -103,7 +103,7 @@ const Levels = {
                 x: start + Math.random() * (end - start),
                 y: groundY * 0.1 + Math.random() * groundY * 0.65,
                 radius: 12,
-                value: 5 + Math.floor(Math.random() * 3) * 5, // 5-15 arası (azaltılmış)
+                value: 2 + Math.floor(Math.random() * 3) * 2, // 2-8 arası
                 collected: false,
                 bobOffset: Math.random() * Math.PI * 2,
                 rotation: 0

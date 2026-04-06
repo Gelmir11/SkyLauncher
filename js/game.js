@@ -260,7 +260,7 @@ const Game = {
                     x: currentX + 200 + Math.random() * 600,
                     y: this.groundY * 0.1 + Math.random() * this.groundY * 0.65,
                     radius: 12,
-                    value: 5 + Math.floor(Math.random() * 3) * 5,
+                    value: 2 + Math.floor(Math.random() * 3) * 2,
                     collected: false,
                     bobOffset: Math.random() * Math.PI * 2,
                     rotation: 0
